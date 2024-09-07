@@ -1,0 +1,140 @@
+/*
+COP 3014
+Assignment 2
+Author: Ellie Garcia
+Date: 02/9/2024
+*/
+
+#include <iostream>
+#include <cstdlib>
+#include <math.h>
+using namespace std; 
+
+double GetMonthlyInterestRate(double APR);
+//Calculates and returns  the monthly interst based based on the APR
+
+double CalculateAmortization(double loanPayment, double monthlyInterestRate, int months);
+// Calculates and returns the monthly payment for the loan 
+
+void CalculateMonthlyInterestAndPrincipleBalance(double (&interest)[], double (&principle)[], double (&beginingBalance)[], double(&endingBalance)[], int months, double monthlyInterestRate, double loanAmount, double monthlyPayment);
+// Calculates the monthly principle balance, interest, principle payment, and ending balance
+
+void KeepTrackOfTotalPaymentAndInterestAccumulating(double interest[], double& totalInterest, double& totalPayments, double monthlyPayments, int months);
+// Sums of the total interest paid through the loan as well as the sum of all payments made 
+
+void InputFunction(double& loanAmount, double& apr, int& months);
+// Initialize the loan amount, APR, and total months of loan using the user input
+
+void OutputFunction(double beginingBalance[], double interest[], double principle[], double endingBalance[], int months );
+// Displays monthly data for the loan including: begining balance, interest, principle payment , and ending balance
+
+void OutputSummary(double totalPayments, double totalInterest, double monthlyPayment);
+// Display the the total payments and total interest accumulated throughout the loan as well as the static monthly payment
+
+bool AskUserToContinue(); 
+// Ask the user to continue 
+
+int main()
+{
+    bool contProgram= true; 
+    while(contProgram)
+    {
+        //Variable intialization 
+        double loanAmount, apr, monthlyPayment, monthlyInterestRate, totalInterest, totalPayments;
+        int months; 
+
+        //Gathers important information for loan calculations 
+        InputFunction(loanAmount, apr, months); 
+
+        //Calculate Monthly Interest Rate and Amortizatio
+        monthlyInterestRate = GetMonthlyInterestRate(apr); 
+        monthlyPayment = CalculateAmortization(loanAmount, monthlyInterestRate, months);
+
+       //array Initialization
+        double beginingBalance[months]; 
+        double interest[months];
+        double principle[months];
+        double endingBalance[months]; 
+       
+        //Calculates monthly and total values for payments and Interest 
+        CalculateMonthlyInterestAndPrincipleBalance(interest, principle, beginingBalance, endingBalance, months, monthlyInterestRate, loanAmount, monthlyPayment);
+        KeepTrackOfTotalPaymentAndInterestAccumulating(interest,totalInterest, totalPayments, monthlyPayment, months ); 
+
+        //Display Results 
+        OutputFunction(beginingBalance, interest,principle, endingBalance, months); 
+        OutputSummary(totalPayments,totalInterest, monthlyPayment); 
+
+        //Ask user to Continue Program 
+        contProgram = AskUserToContinue();       
+   }     
+}
+
+double GetMonthlyInterestRate(double APR)
+{
+    return pow(1+(APR/100), 1.0/12)-1; //calculates monthly interest rate based on formula 
+}
+
+double CalculateAmortization(double loanPayment, double monthlyInterestRate, int months)
+{
+    double value = (loanPayment * monthlyInterestRate* pow((1+monthlyInterestRate),months))/ (pow((1+monthlyInterestRate),months)-1); 
+ // calculates monthly payment based on formula
+    return value ; 
+}
+
+void CalculateMonthlyInterestAndPrincipleBalance(double (&interest)[], double (&principle)[],double (&beginingBalance)[], double(&endingBalance)[], int months, double monthlyInterestRate, double loanAmount, double monthlyPayment)
+{
+    beginingBalance[0] = loanAmount;  
+    for (int i=0; i < months; i++)
+    {       
+        interest[i]= beginingBalance[i] * monthlyInterestRate; 
+        principle[i] = monthlyPayment- interest[i]; 
+        endingBalance[i] = beginingBalance[i]- principle[i]; 
+        if (i != months-1)  // avoids overloading the array 
+            beginingBalance[i+1] = endingBalance[i];     
+    }
+}
+void KeepTrackOfTotalPaymentAndInterestAccumulating(double interest[], double& totalInterest, double& totalPayments, double monthlyPayments, int months)
+{ 
+    totalPayments = monthlyPayments*months;     
+    for(int i=0; i < months; i++) //loops through monthly interest 
+    {
+        totalInterest += interest[i]; //accumulation of interest
+    }
+}
+
+void InputFunction(double& loanAmount, double& apr, int& months)
+{
+    cout << "Note the APR should be taken as a percentage." << endl; 
+    cout << "Please enter your loan amount, APR, and months for loan in that order: "<< endl;
+    cin >> loanAmount >> apr >> months; 
+}
+
+void OutputFunction(double beginingBalance[], double interest[], double principle[], double endingBalance[], int months)
+{
+    cout.setf(ios::fixed); //specifies fixed point notation
+    cout.precision(2); //Set decimal place to two places 
+
+    cout << "Begining Balance "  << "Interest "  << "Principle "  << "Ending Balance"<< endl; //Titles for Values 
+    cout.width(5); // Tabularizes the output 
+
+    for ( int i =0; i< 24; i++) // loops through monthly data 
+    {
+        cout <<  beginingBalance[i] << "          " <<interest[i] <<"  " << principle[i] << "    " << endingBalance[i] << endl; //iterate through monthly values 
+    }
+}
+
+void OutputSummary(double totalPayments, double totalInterest, double monthlyPayment)
+{
+    cout << "\n\n       Loan Summary" << endl;
+    cout << "Payment Every Month: $" << monthlyPayment << endl;
+    cout << "Total Payments: $" << totalPayments << endl; 
+    cout << "Total Interest: $" << totalInterest << endl; 
+}
+
+bool AskUserToContinue()
+{
+    bool repeat; 
+    cout << "Would you like to repeat the program? Type 1 for yes or 0 for no" << endl; 
+    cin >> repeat; 
+    return repeat;
+}
